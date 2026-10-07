@@ -59,19 +59,12 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_8: Ohne gültigen JWT erhält der User 401.
 
 **Tasks**
-- T_1: `hello`-Beispiel durch Package `project` ersetzen (Entity, DTOs, Mapper, Repository)
-- T_2: `EmployeeClient` mit RestClient erstellen: prüft `GET /employees/{id}` inkl. Weitergabe des JWT
-- T_3: `ProjectService.create` mit allen Prüfungen (Mitarbeiter, Kunde, Datum)
-- T_4: `POST /projects` im Controller, Security-Config und Swagger anpassen
-- T_5: eigene Exceptions + Handler im `ApiExceptionHandler`
-- T_6: Integrationstests (Employee-Service im Test gemockt)
-
-**Testfälle (Auszug)**
-- TF_1: gültige Daten → 201, Projekt in DB
-- TF_2: fehlende Bezeichnung → 400
-- TF_3: Enddatum vor Startdatum → 400
-- TF_4: unbekannter verantwortlicher Mitarbeiter → 404
-- TF_5: ohne Token → 401
+- T_1: Datenmodell für Projekte erstellen
+- T_2: Projekt anlegen umsetzen
+- T_3: Prüfung des verantwortlichen Mitarbeiters über den Employee-Service umsetzen
+- T_4: Prüfung des Kunden über den Kunden-Service (Dummy) umsetzen
+- T_5: Fehlermeldungen für ungültige Eingaben umsetzen
+- T_6: Integrationstests schreiben
 
 ---
 
@@ -86,9 +79,10 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_3: Existiert die Id nicht, erhält der User 404.
 
 **Tasks**
-- T_1: `GET /projects` und `GET /projects/{id}` implementieren
-- T_2: `ProjectNotFoundException` + Handler
-- T_3: Integrationstests
+- T_1: Abruf aller Projekte umsetzen
+- T_2: Abruf eines einzelnen Projekts umsetzen
+- T_3: Fehlermeldung für unbekanntes Projekt umsetzen
+- T_4: Integrationstests schreiben
 
 ---
 
@@ -103,9 +97,9 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_3: Es gelten dieselben Prüfungen wie beim Anlegen (Pflichtfelder, Datum, verantwortlicher Mitarbeiter, Kunde).
 
 **Tasks**
-- T_1: `PUT /projects/{id}` + Service-Methode
-- T_2: Prüfungen aus US-01 wiederverwenden
-- T_3: Integrationstests
+- T_1: Ändern der Projektdaten umsetzen
+- T_2: Prüfungen aus „Projekt anlegen“ wiederverwenden
+- T_3: Integrationstests schreiben
 
 ---
 
@@ -119,8 +113,8 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_2: Existiert das Projekt nicht → 404.
 
 **Tasks**
-- T_1: `DELETE /projects/{id}` (Cascade für Zuordnungen)
-- T_2: Integrationstests
+- T_1: Löschen eines Projekts inkl. Mitarbeiterzuordnungen umsetzen
+- T_2: Integrationstests schreiben
 
 ---
 
@@ -137,11 +131,11 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_5: Ist der Mitarbeiter diesem Projekt bereits zugeordnet → 409.
 
 **Tasks**
-- T_1: Entity für die Zuordnung (Projekt ↔ Mitarbeiter-Id + Qualifikation)
-- T_2: `EmployeeClient` um Abfrage der Qualifikationen erweitern
-- T_3: `POST /projects/{id}/employees` + Service-Methode
-- T_4: Exceptions + Handler
-- T_5: Integrationstests
+- T_1: Datenmodell für die Mitarbeiterzuordnung erstellen
+- T_2: Zuweisen eines Mitarbeiters umsetzen
+- T_3: Prüfung von Mitarbeiter und Qualifikation über den Employee-Service umsetzen
+- T_4: Fehlermeldungen umsetzen
+- T_5: Integrationstests schreiben
 
 ---
 
@@ -158,9 +152,9 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_3: Ohne Überschneidung ist die Zuweisung erfolgreich.
 
 **Tasks**
-- T_1: Repository-Abfrage „Projekte eines Mitarbeiters im Zeitraum"
-- T_2: Prüfung in die Zuweisung einbauen
-- T_3: Integrationstests (überlappend, angrenzend, nicht überlappend)
+- T_1: Prüfung auf überschneidende Projektzeiträume umsetzen
+- T_2: Prüfung in die Mitarbeiterzuweisung einbauen
+- T_3: Integrationstests schreiben
 
 ---
 
@@ -175,8 +169,9 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_3: Ist der Mitarbeiter nicht am Projekt beteiligt → 404 mit Fehlermeldung.
 
 **Tasks**
-- T_1: `DELETE /projects/{id}/employees/{employeeId}` + Service
-- T_2: Integrationstests
+- T_1: Entfernen eines Mitarbeiters aus einem Projekt umsetzen
+- T_2: Fehlermeldungen umsetzen
+- T_3: Integrationstests schreiben
 
 ---
 
@@ -190,8 +185,8 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_2: Existiert das Projekt nicht → 404.
 
 **Tasks**
-- T_1: eigenes Antwort-DTO + `GET /projects/{id}/employees`
-- T_2: Integrationstests
+- T_1: Abruf der Mitarbeiter eines Projekts umsetzen
+- T_2: Integrationstests schreiben
 
 ---
 
@@ -206,6 +201,6 @@ ohne dass ein Mitarbeiter doppelt verplant wird.
 - A_3: Ist der Mitarbeiter keinem Projekt zugeordnet, ist die Liste leer.
 
 **Tasks**
-- T_1: Repository-Abfrage + eigenes Antwort-DTO
-- T_2: Endpunkt (Pfad im Team festlegen)
-- T_3: Integrationstests
+- T_1: Abruf der Projekte eines Mitarbeiters umsetzen
+- T_2: Prüfung des Mitarbeiters über den Employee-Service umsetzen
+- T_3: Integrationstests schreiben
