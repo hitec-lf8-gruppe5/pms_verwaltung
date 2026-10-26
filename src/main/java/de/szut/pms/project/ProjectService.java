@@ -1,0 +1,58 @@
+package de.szut.pms.project;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import de.szut.pms.customer.CustomerClient;
+import de.szut.pms.customer.CustomerNotFoundException;
+import de.szut.pms.employee.EmployeeClient;
+import de.szut.pms.employee.EmployeeNotFoundException;
+
+/**
+ * Fachlogik für Projekte: Prüfungen gegen andere Services, dann Speichern.
+ * Der Controller kümmert sich nur um HTTP, das Repository nur um die Datenbank.
+ */
+@Service
+public class ProjectService {
+
+    private final ProjectRepository repository;
+    private final ProjectMapper mapper;
+    private final EmployeeClient employeeClient;
+    private final CustomerClient customerClient;
+
+    public ProjectService(ProjectRepository repository,
+                          ProjectMapper mapper,
+                          EmployeeClient employeeClient,
+                          CustomerClient customerClient) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.employeeClient = employeeClient;
+        this.customerClient = customerClient;
+    }
+
+    /**
+     * Legt ein neues Projekt an.
+     *
+     * @throws EmployeeNotFoundException wenn der verantwortliche Mitarbeiter unbekannt ist
+     * @throws CustomerNotFoundException wenn der Kunde unbekannt ist
+     */
+    @Transactional
+    public ProjectResponseDto create(ProjectRequestDto dto) {
+        validateReferences(dto);
+        ProjectEntity saved = repository.save(mapper.toEntity(dto));
+        return mapper.toDto(saved);
+    }
+
+    /**
+     * Prüft die Ids, die auf andere Services verweisen. Wird auch beim
+     * Ändern eines Projekts (PUT) wiederverwendet.
+     */
+    private void validateReferences(ProjectRequestDto dto) {
+        if (!employeeClient.employeeExists(dto.responsibleEmployeeId())) {
+            throw new EmployeeNotFoundException(dto.responsibleEmployeeId());
+        }
+        if (!customerClient.existsById(dto.customerId())) {
+            throw new CustomerNotFoundException(dto.customerId());
+        }
+    }
+}
