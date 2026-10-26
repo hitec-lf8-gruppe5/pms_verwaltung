@@ -11,6 +11,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import de.szut.pms.customer.CustomerNotFoundException;
+import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.project.ProjectNotFoundException;
 
 /**
@@ -30,6 +32,22 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Nicht gefunden");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ProblemDetail handleEmployeeNotFound(EmployeeNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Mitarbeiter nicht gefunden");
+        return problem;
+    }
+
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ProblemDetail handleCustomerNotFound(CustomerNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Kunde nicht gefunden");
         return problem;
     }
 
