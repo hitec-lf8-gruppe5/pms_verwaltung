@@ -1,8 +1,11 @@
 package de.szut.pms.project;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,5 +39,17 @@ public class ProjectController {
                 .toUri();
 
         return ResponseEntity.created(location).body(created);
+    }
+
+    /** Alle Projekte. Antwort: 200 + Liste (leer, wenn es keine gibt). */
+    @GetMapping
+    public ResponseEntity<List<ProjectResponseDto>> findAll() {
+        return ResponseEntity.ok(service.findAll());
+    }
+
+    /** Ein Projekt über seine Id. Antwort: 200 oder 404. */
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectResponseDto> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 }

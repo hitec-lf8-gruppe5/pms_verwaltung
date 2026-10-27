@@ -1,5 +1,8 @@
 package de.szut.pms.project;
 
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +44,26 @@ public class ProjectService {
         validateReferences(dto);
         ProjectEntity saved = repository.save(mapper.toEntity(dto));
         return mapper.toDto(saved);
+    }
+
+    /** Liefert alle Projekte (nach Id sortiert) mit allen Daten inkl. Mitarbeiter. Keine Projekte → leere Liste. */
+    @Transactional(readOnly = true)
+    public List<ProjectResponseDto> findAll() {
+        return repository.findAll(Sort.by("id")).stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
+    /**
+     * Liefert ein bestimmtes Projekt.
+     *
+     * @throws ProjectNotFoundException wenn es kein Projekt mit dieser Id gibt
+     */
+    @Transactional(readOnly = true)
+    public ProjectResponseDto findById(Long id) {
+        ProjectEntity entity = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        return mapper.toDto(entity);
     }
 
     /**
