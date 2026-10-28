@@ -10,7 +10,7 @@ import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.QualificationNotFoundException;
 
 /**
- * Fachlogik für die Mitarbeiter eines Projekts (zuweisen, später auch entfernen).
+ * Fachlogik für die Mitarbeiter eines Projekts (zuweisen und entfernen).
  */
 @Service
 public class ProjectEmployeeService {
@@ -73,6 +73,37 @@ public class ProjectEmployeeService {
 
         // 6. Alles in Ordnung → zuweisen und speichern
         project.addEmployee(new ProjectEmployeeEntity(employeeId, qualification));
+        ProjectEntity saved = repository.save(project);
+        return mapper.toDto(saved);
+    }
+
+    /**
+     * Entfernt einen Mitarbeiter aus einem Projekt.
+     *
+     * @throws ProjectNotFoundException      wenn es das Projekt nicht gibt (404)
+     * @throws EmployeeNotInProjectException wenn der Mitarbeiter nicht im Projekt ist (404)
+     */
+    @Transactional
+    public ProjectResponseDto removeEmployee(Long projectId, Long employeeId) {
+        // 1. Gibt es das Projekt?
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        // 2. Die Zuordnung dieses Mitarbeiters im Projekt suchen
+        ProjectEmployeeEntity assignment = null;
+        for (ProjectEmployeeEntity projectEmployee : project.getEmployees()) {
+            if (projectEmployee.getEmployeeId().equals(employeeId)) {
+                assignment = projectEmployee;
+            }
+        }
+
+        // 3. Ist der Mitarbeiter gar nicht im Projekt?
+        if (assignment == null) {
+            throw new EmployeeNotInProjectException(projectId, employeeId);
+        }
+
+        // 4. Entfernen und speichern (die Zeile in project_employee wird gelöscht)
+        project.removeEmployee(assignment);
         ProjectEntity saved = repository.save(project);
         return mapper.toDto(saved);
     }
