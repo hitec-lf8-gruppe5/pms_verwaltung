@@ -28,6 +28,11 @@ public class OpenApiConfiguration {
                 .info(new Info()
                         .title("Project-Management-Service")
                         .description("""
+                                Backoffice-Microservice der HiTec GmbH zur Verwaltung von Kundenprojekten: \
+                                Projekte anlegen, abrufen, ändern und löschen sowie Mitarbeiter mit ihrer \
+                                Qualifikation Projekten zuweisen. Mitarbeiter-Ids und Qualifikationen werden \
+                                gegen den Employee-Service geprüft, Kunden-Ids gegen den Kunden-Service.
+
                                 ## Authentifizierung
 
                                 Dieser Service prüft JWTs gegen den lokal per `docker compose` laufenden \
