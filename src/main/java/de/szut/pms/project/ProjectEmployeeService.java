@@ -34,6 +34,8 @@ public class ProjectEmployeeService {
      * @throws EmployeeNotFoundException        wenn es den Mitarbeiter nicht gibt (404)
      * @throws QualificationNotFoundException   wenn der Mitarbeiter die Qualifikation nicht hat (422)
      * @throws EmployeeAlreadyAssignedException wenn der Mitarbeiter schon im Projekt ist (409)
+     * @throws EmployeeAlreadyBookedException   wenn der Mitarbeiter im selben Zeitraum schon
+     *                                          in einem anderen Projekt ist (409)
      */
     @Transactional
     public ProjectResponseDto assignEmployee(Long projectId, AssignEmployeeDto dto) {
@@ -62,7 +64,14 @@ public class ProjectEmployeeService {
             }
         }
 
-        // 5. Alles in Ordnung → zuweisen und speichern
+        // 5. Ist der Mitarbeiter im selben Zeitraum schon in einem anderen Projekt eingeplant?
+        List<ProjectEntity> overlappingProjects = repository.findOverlappingProjects(
+                employeeId, projectId, project.getStartDate(), project.getEndDate());
+        if (!overlappingProjects.isEmpty()) {
+            throw new EmployeeAlreadyBookedException(employeeId, overlappingProjects.get(0));
+        }
+
+        // 6. Alles in Ordnung → zuweisen und speichern
         project.addEmployee(new ProjectEmployeeEntity(employeeId, qualification));
         ProjectEntity saved = repository.save(project);
         return mapper.toDto(saved);
