@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/projects")
-@Tag(name = "Projekte", description = "Projekte anlegen, abrufen und ändern")
+@Tag(name = "Projekte", description = "Projekte anlegen, abrufen, ändern und löschen")
 public class ProjectController {
 
     private final ProjectService service;
@@ -105,5 +106,21 @@ public class ProjectController {
             @Parameter(description = "Id des Projekts", example = "1") @PathVariable Long id,
             @RequestBody @Valid ProjectRequestDto dto) {
         return ResponseEntity.ok(service.update(id, dto));
+    }
+
+    /** Löscht ein Projekt. Antwort: 204 oder 404. */
+    @Operation(summary = "Projekt löschen",
+            description = "Löscht ein Projekt anhand seiner Id.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Projekt gelöscht"),
+            @ApiResponse(responseCode = "401", description = "Kein oder ungültiger JWT", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Kein Projekt mit dieser Id",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @Parameter(description = "Id des Projekts", example = "1") @PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -96,4 +96,16 @@ public class ProjectService {
             throw new CustomerNotFoundException(dto.customerId());
         }
     }
+
+    /**
+     * Löscht ein Projekt inklusive seiner Mitarbeiterzuordnungen (Cascade).
+     *
+     * @throws ProjectNotFoundException wenn es kein Projekt mit dieser Id gibt
+     */
+    @Transactional
+    public void delete(Long id) {
+        ProjectEntity entity = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        repository.delete(entity);
+    }
 }
