@@ -1,10 +1,9 @@
-
 package de.szut.pms.project;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
@@ -13,7 +12,6 @@ import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 
 import de.szut.pms.testcontainers.AbstractIntegrationTest;
@@ -27,36 +25,15 @@ class DeleteProjectTest extends AbstractIntegrationTest {
     @Test
     @WithMockUser
     void deleteProjectWithAssignedEmployeeReturnsNoContentAndRemovesProject() throws Exception {
-        // Projekt über die bestehende POST-Schnittstelle anlegen.
-        final String content = """
-                {
-                    "name": "Webshop Relaunch",
-                    "responsibleEmployeeId": 1,
-                    "customerId": 7,
-                    "customerContactName": "Erika Musterfrau",
-                    "comment": "Neuer Webshop für den Kunden",
-                    "startDate": "2026-11-01",
-                    "endDate": "2026-12-31"
-                }
-                """;
-
-        mockMvc.perform(post("/projects")
-                        .content(content)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .with(csrf()))
-                .andExpect(status().isCreated());
-
-        ProjectEntity project = projectRepository.findAll().get(0);
-        Long projectId = project.getId();
-
-        // Mitarbeiterzuordnung für das Projekt anlegen.
-        ProjectEmployeeEntity employee =
-                new ProjectEmployeeEntity(2L, "Developer");
-        project.addEmployee(employee);
-        projectRepository.save(project);
-
-        entityManager.flush();
-        entityManager.clear();
+        // Projekt mit einem zugeordneten Mitarbeiter direkt über das Repository anlegen.
+        ProjectEntity project = new ProjectEntity();
+        project.setName("Webshop Relaunch");
+        project.setResponsibleEmployeeId(1L);
+        project.setCustomerId(7L);
+        project.setStartDate(LocalDate.of(2026, 11, 1));
+        project.setEndDate(LocalDate.of(2026, 12, 31));
+        project.addEmployee(new ProjectEmployeeEntity(2L, "Developer"));
+        Long projectId = projectRepository.save(project).getId();
 
         // Prüfen, dass die Mitarbeiterzuordnung in der Datenbank existiert.
         Long assignmentCountBefore = entityManager.createQuery(
@@ -92,7 +69,8 @@ class DeleteProjectTest extends AbstractIntegrationTest {
     void deleteUnknownProjectReturnsNotFound() throws Exception {
         mockMvc.perform(delete("/projects/999999")
                         .with(csrf()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("title").value("Nicht gefunden"));
     }
 
     @Test
