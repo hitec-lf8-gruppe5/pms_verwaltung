@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -33,7 +34,7 @@ public class EmployeeServiceClient implements EmployeeClient {
         try {
             restClient.get()
                     .uri("/employees/{id}", employeeId)
-                    .header("Authorization", getBearerToken())
+                    .headers(headers -> addToken(headers))
                     .retrieve()
                     .toBodilessEntity();
             return true;
@@ -48,7 +49,7 @@ public class EmployeeServiceClient implements EmployeeClient {
         try {
             response = restClient.get()
                     .uri("/employees/{id}/qualifications", employeeId)
-                    .header("Authorization", getBearerToken())
+                    .headers(headers -> addToken(headers))
                     .retrieve()
                     .body(EmployeeQualificationsDto.class);
         } catch (HttpClientErrorException.NotFound e) {
@@ -65,12 +66,14 @@ public class EmployeeServiceClient implements EmployeeClient {
         return qualifications;
     }
 
-    /** Holt den JWT aus der aktuellen Anfrage und baut daraus "Bearer <token>". */
-    private String getBearerToken() {
+    /**
+     * Holt den JWT aus der aktuellen Anfrage und setzt ihn als "Authorization: Bearer <token>".
+     * Gibt es keinen JWT, wird kein Authorization-Header gesetzt.
+     */
+    private void addToken(HttpHeaders headers) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken jwtAuthentication) {
-            return "Bearer " + jwtAuthentication.getToken().getTokenValue();
+            headers.setBearerAuth(jwtAuthentication.getToken().getTokenValue());
         }
-        return "";
     }
 }

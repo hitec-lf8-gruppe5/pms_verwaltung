@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.headerDoesNotExist;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withResourceNotFound;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -64,6 +65,17 @@ class EmployeeServiceClientTest {
                 .andRespond(withResourceNotFound());
 
         assertFalse(client.employeeExists(99L));
+        employeeService.verify();
+    }
+
+    @Test
+    void employeeExists_sendsNoAuthorizationHeader_whenThereIsNoJwt() {
+        SecurityContextHolder.clearContext();
+        employeeService.expect(requestTo("http://localhost:8089/employees/1"))
+                .andExpect(headerDoesNotExist("Authorization"))
+                .andRespond(withSuccess("{\"id\": 1}", MediaType.APPLICATION_JSON));
+
+        assertTrue(client.employeeExists(1L));
         employeeService.verify();
     }
 
