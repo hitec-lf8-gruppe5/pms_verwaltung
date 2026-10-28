@@ -96,4 +96,14 @@ public class ProjectService {
             throw new CustomerNotFoundException(dto.customerId());
         }
     }
+
+
+ /* Löscht ein vorhandenes Projekt anhand seiner ID */
+@Transactional
+public void delete(Long id) {
+    ProjectEntity entity = repository.findById(id)
+            .orElseThrow(() -> new ProjectNotFoundException(id));
+
+    repository.delete(entity);
+}
 }

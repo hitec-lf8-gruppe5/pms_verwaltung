@@ -21,3 +21,4 @@ Authorization: Bearer {{bearer_token}}
 ### Einen Eintrag löschen
 DELETE http://localhost:8080/hello/1
 Authorization: Bearer {{bearer_token}}
+
