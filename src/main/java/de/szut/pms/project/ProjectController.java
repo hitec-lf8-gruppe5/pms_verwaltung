@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,7 +31,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/projects")
-@Tag(name = "Projekte", description = "Projekte anlegen, abrufen, ändern und löschen")
+@Tag(name = "Projekte", description = "Projekte anlegen, abrufen und ändern")
 public class ProjectController {
 
     private final ProjectService service;
@@ -123,4 +124,35 @@ public class ProjectController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    /** Alle Mitarbeiter eines Projekts abrufen. */
+   @Operation(
+        summary = "Alle Mitarbeiter eines Projekts abrufen",
+        description = "Liefert alle Mitarbeiter eines Projekts anhand seiner Id."
+)
+@ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "Mitarbeiter erfolgreich abgerufen"
+        ),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Kein oder ungültiger JWT",
+                content = @Content
+        ),
+        @ApiResponse(
+                responseCode = "404",
+                description = "Kein Projekt mit dieser Id",
+                content = @Content(schema = @Schema(implementation = ProblemDetail.class))
+        )
+})
+@GetMapping("/{id}/employees")
+public ResponseEntity<List<Long>> findEmployeesByProjectId(
+        @Parameter(description = "Id des Projekts", example = "1")
+        @PathVariable Long id) {
+    return ResponseEntity.ok(service.findEmployeesByProjectId(id));
 }
+}
+
+
+
