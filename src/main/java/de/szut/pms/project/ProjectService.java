@@ -67,6 +67,24 @@ public class ProjectService {
     }
 
     /**
+     * Überschreibt alle Daten eines bestehenden Projekts (PUT). Die Id und die
+     * zugeordneten Mitarbeiter bleiben erhalten.
+     *
+     * @throws ProjectNotFoundException  wenn es kein Projekt mit dieser Id gibt
+     * @throws EmployeeNotFoundException wenn der verantwortliche Mitarbeiter unbekannt ist
+     * @throws CustomerNotFoundException wenn der Kunde unbekannt ist
+     */
+    @Transactional
+    public ProjectResponseDto update(Long id, ProjectRequestDto dto) {
+        ProjectEntity entity = repository.findById(id)
+                .orElseThrow(() -> new ProjectNotFoundException(id));
+        validateReferences(dto);
+        mapper.updateEntity(entity, dto);
+        ProjectEntity saved = repository.save(entity);
+        return mapper.toDto(saved);
+    }
+
+    /**
      * Prüft die Ids, die auf andere Services verweisen. Wird auch beim
      * Ändern eines Projekts (PUT) wiederverwendet.
      */

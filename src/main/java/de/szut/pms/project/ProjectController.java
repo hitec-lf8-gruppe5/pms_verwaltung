@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/projects")
-@Tag(name = "Projekte", description = "Projekte anlegen und abrufen")
+@Tag(name = "Projekte", description = "Projekte anlegen, abrufen und ändern")
 public class ProjectController {
 
     private final ProjectService service;
@@ -85,5 +86,24 @@ public class ProjectController {
     public ResponseEntity<ProjectResponseDto> findById(
             @Parameter(description = "Id des Projekts", example = "1") @PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
+    }
+
+    /** Ändert alle Daten eines Projekts. Antwort: 200 + das geänderte Projekt. */
+    @Operation(summary = "Projektdaten ändern",
+            description = "Überschreibt alle Daten eines Projekts. Id und zugeordnete Mitarbeiter bleiben erhalten. "
+                    + "Es gelten dieselben Prüfungen wie beim Anlegen.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Projekt geändert"),
+            @ApiResponse(responseCode = "400", description = "Ungültige Eingabe (Pflichtfeld fehlt, Enddatum vor Startdatum …)",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Kein oder ungültiger JWT", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Projekt, verantwortlicher Mitarbeiter oder Kunde unbekannt",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectResponseDto> update(
+            @Parameter(description = "Id des Projekts", example = "1") @PathVariable Long id,
+            @RequestBody @Valid ProjectRequestDto dto) {
+        return ResponseEntity.ok(service.update(id, dto));
     }
 }
