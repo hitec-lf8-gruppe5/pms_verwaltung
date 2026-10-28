@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 /**
@@ -24,6 +25,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/projects/{projectId}/employees")
+@Tag(name = "Projektmitarbeiter", description = "Mitarbeiter einem Projekt zuweisen und daraus entfernen")
 public class ProjectEmployeeController {
 
     private final ProjectEmployeeService service;
@@ -33,9 +35,27 @@ public class ProjectEmployeeController {
     }
 
     /** Weist einen Mitarbeiter zu. Antwort: 201 Created + das aktualisierte Projekt. */
+    @Operation(summary = "Mitarbeiter einem Projekt zuweisen",
+            description = "Weist einem Projekt einen Mitarbeiter mit einer Qualifikation zu. Mitarbeiter und "
+                    + "Qualifikation werden gegen den Employee-Service geprüft. Ein Mitarbeiter darf im selben "
+                    + "Zeitraum nur in einem Projekt sein.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Mitarbeiter zugewiesen; Antwort enthält das aktualisierte Projekt"),
+            @ApiResponse(responseCode = "400", description = "Ungültige Eingabe (Mitarbeiter-Id oder Qualifikation fehlt)",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "401", description = "Kein oder ungültiger JWT", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Projekt oder Mitarbeiter unbekannt",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "409", description = "Mitarbeiter ist schon im Projekt oder im selben Zeitraum "
+                    + "in einem anderen Projekt eingeplant",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
+            @ApiResponse(responseCode = "422", description = "Mitarbeiter hat die Qualifikation nicht",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
     @PostMapping
-    public ResponseEntity<ProjectResponseDto> assignEmployee(@PathVariable Long projectId,
-                                                             @RequestBody @Valid AssignEmployeeDto dto) {
+    public ResponseEntity<ProjectResponseDto> assignEmployee(
+            @Parameter(description = "Id des Projekts", example = "1") @PathVariable Long projectId,
+            @RequestBody @Valid AssignEmployeeDto dto) {
         ProjectResponseDto project = service.assignEmployee(projectId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(project);
     }
