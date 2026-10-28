@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import de.szut.pms.customer.CustomerNotFoundException;
 import de.szut.pms.employee.EmployeeNotFoundException;
+import de.szut.pms.employee.QualificationNotFoundException;
+import de.szut.pms.project.EmployeeAlreadyAssignedException;
 import de.szut.pms.project.ProjectNotFoundException;
 
 /**
@@ -48,6 +50,22 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Kunde nicht gefunden");
+        return problem;
+    }
+
+    @ExceptionHandler(QualificationNotFoundException.class)
+    public ProblemDetail handleQualificationNotFound(QualificationNotFoundException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
+        problem.setTitle("Qualifikation fehlt");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeAlreadyAssignedException.class)
+    public ProblemDetail handleEmployeeAlreadyAssigned(EmployeeAlreadyAssignedException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Mitarbeiter bereits zugeordnet");
         return problem;
     }
 
