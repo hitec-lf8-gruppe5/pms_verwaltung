@@ -16,6 +16,7 @@ import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.QualificationNotFoundException;
 import de.szut.pms.project.EmployeeAlreadyAssignedException;
 import de.szut.pms.project.EmployeeAlreadyBookedException;
+import de.szut.pms.project.EmployeeNotInProjectException;
 import de.szut.pms.project.ProjectNotFoundException;
 
 /**
@@ -75,6 +76,14 @@ public class ApiExceptionHandler {
         ProblemDetail problem =
                 ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Mitarbeiter bereits verplant");
+        return problem;
+    }
+
+    @ExceptionHandler(EmployeeNotInProjectException.class)
+    public ProblemDetail handleEmployeeNotInProject(EmployeeNotInProjectException ex) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setTitle("Mitarbeiter nicht im Projekt");
         return problem;
     }
 
