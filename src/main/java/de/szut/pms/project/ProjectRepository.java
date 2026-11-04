@@ -33,4 +33,15 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
                                                 @Param("projectId") Long projectId,
                                                 @Param("startDate") LocalDate startDate,
                                                 @Param("endDate") LocalDate endDate);
+                                                /**
+     * Alle Projekte, denen der Mitarbeiter zugeordnet ist, nach Startdatum sortiert.
+     * DISTINCT, damit jedes Projekt nur einmal vorkommt.
+     */
+    @Query("""
+            SELECT DISTINCT p FROM ProjectEntity p
+            JOIN p.employees e
+            WHERE e.employeeId = :employeeId
+            ORDER BY p.startDate
+            """)
+    List<ProjectEntity> findAllByEmployeeId(@Param("employeeId") Long employeeId);
 }

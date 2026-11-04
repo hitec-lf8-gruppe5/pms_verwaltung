@@ -10,8 +10,9 @@ import de.szut.pms.employee.EmployeeNotFoundException;
 import de.szut.pms.employee.QualificationNotFoundException;
 
 /**
- * Fachlogik für die Mitarbeiter eines Projekts (zuweisen und entfernen).
+ * Fachlogik für die Mitarbeiter eines Projekts (zuweisen, entfernen, abfragen).
  */
+
 @Service
 public class ProjectEmployeeService {
 
@@ -106,5 +107,54 @@ public class ProjectEmployeeService {
         project.removeEmployee(assignment);
         ProjectEntity saved = repository.save(project);
         return mapper.toDto(saved);
+    }
+    /**
+     * Liefert die Mitarbeiter eines Projekts.
+     *
+     * @throws ProjectNotFoundException wenn es das Projekt nicht gibt (404)
+     */
+    @Transactional(readOnly = true)
+    public ProjectEmployeesResponseDto getEmployees(Long projectId) {
+        ProjectEntity project = repository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        List<ProjectEmployeeDto> employees = project.getEmployees().stream()
+                .map(mapper::toDto)
+                .toList();
+        return new ProjectEmployeesResponseDto(project.getId(), project.getName(), employees);
+    }
+
+    /**
+     * Liefert alle Projekte eines Mitarbeiters mit seiner Qualifikation im jeweiligen Projekt.
+     *
+     * @throws EmployeeNotFoundException wenn es den Mitarbeiter im Employee-Service nicht gibt (404)
+     */
+    @Transactional(readOnly = true)
+    public EmployeeProjectsResponseDto getProjectsOfEmployee(Long employeeId) {
+        // 1. Gibt es den Mitarbeiter im Employee-Service?
+        if (!employeeClient.employeeExists(employeeId)) {
+            throw new EmployeeNotFoundException(employeeId);
+        }
+
+        // 2. Alle Projekte holen, in denen er eingeplant ist, und je Projekt seine Qualifikation suchen
+        List<EmployeeProjectDto> projects = repository.findAllByEmployeeId(employeeId).stream()
+                .map(project -> new EmployeeProjectDto(
+                        project.getId(),
+                        project.getName(),
+                        project.getStartDate(),
+                        project.getEndDate(),
+                        qualificationOf(project, employeeId)))
+                .toList();
+        return new EmployeeProjectsResponseDto(employeeId, projects);
+    }
+
+    /** Sucht die Qualifikation, mit der der Mitarbeiter in diesem Projekt eingesetzt ist. */
+    private String qualificationOf(ProjectEntity project, Long employeeId) {
+        for (ProjectEmployeeEntity projectEmployee : project.getEmployees()) {
+            if (projectEmployee.getEmployeeId().equals(employeeId)) {
+                return projectEmployee.getQualification();
+            }
+        }
+        return null;
     }
 }

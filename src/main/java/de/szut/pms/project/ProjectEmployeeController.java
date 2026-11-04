@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +26,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/projects/{projectId}/employees")
-@Tag(name = "Projektmitarbeiter", description = "Mitarbeiter einem Projekt zuweisen und daraus entfernen")
+@Tag(name = "Projektmitarbeiter", description = "Mitarbeiter eines Projekts abrufen, zuweisen und entfernen")
 public class ProjectEmployeeController {
 
     private final ProjectEmployeeService service;
@@ -76,5 +77,20 @@ public class ProjectEmployeeController {
             @Parameter(description = "Id des Mitarbeiters", example = "1") @PathVariable Long employeeId) {
         ProjectResponseDto project = service.removeEmployee(projectId, employeeId);
         return ResponseEntity.ok(project);
+    }
+    /** Alle Mitarbeiter eines Projekts. Antwort: 200 (Liste ggf. leer) oder 404. */
+    @Operation(summary = "Mitarbeiter eines Projekts abrufen",
+            description = "Liefert Projekt-Id, Projektbezeichnung und alle Mitarbeiter des Projekts "
+                    + "jeweils mit Id und Qualifikation.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Mitarbeiter des Projekts (leer, wenn keine zugeordnet sind)"),
+            @ApiResponse(responseCode = "401", description = "Kein oder ungültiger JWT", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Kein Projekt mit dieser Id",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+    })
+    @GetMapping
+    public ResponseEntity<ProjectEmployeesResponseDto> getEmployees(
+            @Parameter(description = "Id des Projekts", example = "1") @PathVariable Long projectId) {
+        return ResponseEntity.ok(service.getEmployees(projectId));
     }
 }
