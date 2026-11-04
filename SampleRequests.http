@@ -1,23 +1,76 @@
 ### Zuerst in GetBearerToken.http einen Token holen und hier eintragen
 @bearer_token=HIER_TOKEN_EINTRAGEN
+@base_url=http://localhost:8080
 
-### Alle Einträge abrufen
-GET http://localhost:8080/hello
-Authorization: Bearer {{bearer_token}}
+# Hinweis: Mitarbeiter-Ids (responsibleEmployeeId, employeeId) müssen im Employee-Service
+# existieren (http://localhost:8089/swagger), Qualifikationen muss der Mitarbeiter dort besitzen.
 
-### Einen Eintrag anlegen
-POST http://localhost:8080/hello
+
+### ===================== Projekte =====================
+
+### Projekt anlegen → 201
+POST {{base_url}}/projects
 Content-Type: application/json
 Authorization: Bearer {{bearer_token}}
 
 {
-  "message": "Hallo Welt!"
+  "name": "Webshop Relaunch",
+  "responsibleEmployeeId": 1,
+  "customerId": 7,
+  "customerContactName": "Erika Musterfrau",
+  "comment": "Neuer Webshop mit Online-Bezahlung",
+  "startDate": "2026-11-01",
+  "endDate": "2026-12-31"
 }
 
-### Nach Nachricht suchen
-GET http://localhost:8080/hello/findByMessage?message=Hallo Welt!
+### Alle Projekte abrufen → 200
+GET {{base_url}}/projects
 Authorization: Bearer {{bearer_token}}
 
-### Einen Eintrag löschen
-DELETE http://localhost:8080/hello/1
+### Ein Projekt abrufen → 200 (404, wenn es die Id nicht gibt)
+GET {{base_url}}/projects/1
+Authorization: Bearer {{bearer_token}}
+
+### Projektdaten ändern → 200
+PUT {{base_url}}/projects/1
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "name": "Webshop Relaunch 2.0",
+  "responsibleEmployeeId": 1,
+  "customerId": 7,
+  "customerContactName": "Erika Musterfrau",
+  "comment": "Ziel erweitert: zusätzlich App-Anbindung",
+  "startDate": "2026-11-01",
+  "endDate": "2027-01-31"
+}
+
+### Projekt löschen → 204
+DELETE {{base_url}}/projects/1
+Authorization: Bearer {{bearer_token}}
+
+
+### ===================== Mitarbeiter im Projekt =====================
+
+### Mitarbeiter mit Qualifikation zuweisen → 201 (409 bei Überschneidung, 422 ohne Qualifikation)
+POST {{base_url}}/projects/1/employees
+Content-Type: application/json
+Authorization: Bearer {{bearer_token}}
+
+{
+  "employeeId": 1,
+  "qualification": "Java"
+}
+
+### Alle Mitarbeiter eines Projekts abrufen → 200
+GET {{base_url}}/projects/1/employees
+Authorization: Bearer {{bearer_token}}
+
+### Mitarbeiter aus dem Projekt entfernen → 200
+DELETE {{base_url}}/projects/1/employees/1
+Authorization: Bearer {{bearer_token}}
+
+### Alle Projekte eines Mitarbeiters abrufen → 200
+GET {{base_url}}/employees/1/projects
 Authorization: Bearer {{bearer_token}}
